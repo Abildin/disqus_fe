@@ -24,6 +24,7 @@
     <div id="comments-r"></div>
   </div>
 
+  <!-- Template for comments management ractive -->
   <script id="comments-t" type="text/ractive">
     <div class="row">
       <div class="col-md-12">
@@ -88,7 +89,14 @@
           {{/if}}
           <div class="panel-footer">
             <div class="input-group">
-              <span class="input-group-addon"><span class="mdi-communication-messenger"></span></span>
+              <span class="input-group-addon">
+                {{#if !comment.replyTo }}
+                <span class="mdi-communication-messenger"></span>
+                {{/if}}
+                {{#if comment.replyTo }}
+                <span class="mdi-notification-sms" title="{{ comment.replyTo.text }}" on-click="cancel()"></span>
+                {{/if}}
+              </span>
               <input value="{{ comment.text }}" class="form-control" type="text" placeholder="Comment">
               <span class="input-group-btn">
                 <button class="btn btn-xs btn-primary" type="button" on-click="newComment()">Send</button>

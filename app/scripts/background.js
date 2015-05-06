@@ -74,7 +74,6 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         url = new URL(tab.url).hostname;
         if (request.command === "getComments") {
           offset = request.offset || 0;
-          console.log(offset);
           Backend.getComments(url, offset, function(response) {
             return sendResponse({
               status: "success",

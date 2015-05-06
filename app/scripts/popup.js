@@ -63,10 +63,6 @@ CommentRactive = Ractive.extend({
     result += date.getDate();
     return result;
   },
-  query: function(event) {
-    this.getList(this.get('q'));
-    return false;
-  },
   next: function() {
     var meta, offset;
     meta = this.get('meta');
@@ -102,8 +98,18 @@ CommentRactive = Ractive.extend({
     });
   },
   replyTo: function(comment) {
-    this.set('comment.replyTo', comment.resource_uri);
-    return this.set('comment.text', comment.title + ", ");
+    this.set('comment.replyTo', comment);
+    return this.set('comment.text', comment.title + ", " + (this.get('comment.text')));
+  },
+  cancel: function() {
+    var newText, repliedMessage;
+    repliedMessage = this.get('comment.replyTo');
+    newText = this.get('comment.text');
+    if (newText.substring(0, repliedMessage.title.length + 2) === (repliedMessage.title + ", ")) {
+      newText = newText.substring(repliedMessage.title.length + 2, newText.length);
+    }
+    this.set('comment.text', newText);
+    return this.set('comment.replyTo', null);
   },
   newComment: function() {
     var comment, self, user;

@@ -5,16 +5,44 @@
 CommentRactive = Ractive.extend
   template: '#comments-t'
   data:
+    # 
+    # User's name and email
+    # 
+    # Required for posting comment
+    # 
     user:
       title: null
       email: null
+    # 
+    # Comment's text and uri for repling to comment
+    # 
+    # text - Comment text
+    # replyTo - uri of comment (OPTIONAL)
+    # 
     comment:
       replyTo: null
       text: null
+    # 
+    # Comment's list for site
+    # 
     comments: []
+    # 
+    # Helper method for formating comment's timespamp
+    # 
+    # Format "YYYY-MM-DD HH:mm:SS"
+    # 
     formatFull: (time) ->
       timestamp = new Date(time)
       return "#{this.formatDate(timestamp)} #{this.formatTime(timestamp)}"
+    # 
+    # Helper method for formating comment's timespamp deppending on timestamp's date
+    # 
+    # If today's date
+    # Format "HH:mm:SS"
+    # 
+    # If previous dates
+    # Format "YYYY-MM-DD"
+    # 
     format: (time) ->
       timestamp = new Date(time)
       now = new Date()
@@ -22,8 +50,16 @@ CommentRactive = Ractive.extend
         return this.formatTime(timestamp)
       else
         return this.formatDate(timestamp)
+    # 
+    # Helper method for creating md5 hash of user's email
+    # 
     md5: (text) ->
       return md5(text)
+  # 
+  # Helper method for formating datetime to time
+  # 
+  # Format "HH:mm:SS"
+  # 
   formatTime: (date) ->
     result = ""
     if date.getHours().toString().length < 2
@@ -36,6 +72,11 @@ CommentRactive = Ractive.extend
       result += "0"
     result += date.getSeconds()
     return result
+  # 
+  # Helper method for formating datetime to date
+  # 
+  # Format "YYYY-MM-DD"
+  # 
   formatDate: (date) ->
     result = "#{date.getFullYear()}-"
     if (date.getMonth() + 1).toString().length < 2
@@ -45,19 +86,25 @@ CommentRactive = Ractive.extend
       result += "0"
     result += date.getDate()
     return result
-  query: (event) ->
-    this.getList(this.get('q'))
-    return false
+  # 
+  # Method for requesting next page of comments
+  # 
   next: () ->
     meta = this.get 'meta'
     if meta.next
       offset = Math.floor(meta.offset / meta.limit) + 1
       this.getComments(offset)
+  # 
+  # Method for requesting previous page of comments
+  # 
   prev: () ->
     meta = this.get 'meta'
     if meta.previous
       offset = Math.floor(meta.offset / meta.limit) - 1
       this.getComments(offset)
+  # 
+  # Method for requesting comments from background script
+  # 
   getComments: (offset=0) ->
     self = this
     chrome.extension.sendRequest 
@@ -69,9 +116,31 @@ CommentRactive = Ractive.extend
         self.set 'comments', response.response.objects
         console.log response.response.meta
         console.log response.response.objects
+  # 
+  # Method for repling to comments
+  # 
+  # Add "replyTo" to current comment and add prefix with username of replied comment's owner to comment text
+  # 
   replyTo: (comment) ->
-    this.set 'comment.replyTo', comment.resource_uri
-    this.set 'comment.text', "#{comment.title}, "
+    this.set 'comment.replyTo', comment
+    this.set 'comment.text', "#{comment.title}, #{this.get 'comment.text'}"
+  # 
+  # Method for canceling reply to comments
+  # 
+  # Remove "replyTo" from current comment and remove prefix from text if exist
+  # 
+  cancel: () ->
+    repliedMessage = this.get 'comment.replyTo'
+    newText = this.get 'comment.text'
+    if newText.substring(0, repliedMessage.title.length + 2) == "#{repliedMessage.title}, "
+      newText = newText.substring(repliedMessage.title.length + 2, newText.length)
+    this.set 'comment.text', newText
+    this.set 'comment.replyTo', null
+  # 
+  # Method for posting comment to server
+  # 
+  # Sends request to background script
+  # 
   newComment: () ->
     self = this
     user = this.get 'user'
@@ -94,11 +163,21 @@ CommentRactive = Ractive.extend
       setTimeout () ->
         self.set 'error', null
       , 2000
+  # 
+  # Method that calls when username or email of user
+  # 
+  # Sends request to background for saving the user information
+  # 
   save: () ->
     user = this.get 'user'
     chrome.extension.sendRequest
       command: "setUser"
       user: user
+  # 
+  # Initialization method
+  # 
+  # Gets user info from storage and requests comments list for current site
+  # 
   init: (options) ->
     self = this
     chrome.extension.sendRequest
@@ -107,5 +186,8 @@ CommentRactive = Ractive.extend
       self.set 'user', response.user
     this.getComments()
 
+# 
+# Ractive for comments management
+# 
 r = new CommentRactive 
   el: '#comments-r'
