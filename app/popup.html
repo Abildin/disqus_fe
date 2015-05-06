@@ -15,6 +15,76 @@
   </head>
   <body>
 
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <h3><strong>SDU Disqus</strong></h3>
+      </div>
+    </div>
+    <div id="comments-r"></div>
+  </div>
+
+  <script id="comments-t" type="text/ractive">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-primary">
+          <div class="panel-heading shadow-z-1">
+            <h3 class="panel-title">Who are you?</h3>
+          </div>
+          <div class="panel-body">
+            <input type="text" value="{{ user.title }}" on-change="query(event)" class="form-control" placeholder="Name">
+            <input type="text" value="{{ user.email }}" on-change="query(event)" class="form-control" placeholder="Email">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-primary">
+          {{#if comments.length == 0}}
+          <div class="panel-heading shadow-z-1">
+              <h3 class="panel-title">No comments</h3>
+          </div>
+          {{/if}}
+          {{#if comments.length != 0}}
+          <div class="panel-heading shadow-z-1">
+              <h3 class="panel-title">{{ comments.length }} comment{{#if comments.length > 1}}s{{/if}}</h3>
+          </div>
+          <div class="panel-body" style="overflow-y: scroll;">
+            <div class="list-group">
+                {{#each comments}}
+                <div class="list-group-item" on-click="replyTo(this)">
+                    <div class="row-picture">
+                        <img class="circle" src="http://www.gravatar.com/avatar/{{ email || '' }}" alt="icon">
+                    </div>
+                    <div class="row-content">
+                        <div class="least-content">{{ format(timestamp) }}</div>
+                        <h4 class="list-group-item-heading">{{ title }}</h4>
+                        <p class="list-group-item-text">{{ comment }}</p>
+                    </div>
+                </div>
+                <div class="list-group-separator"></div>
+                {{/each}}
+            </div>
+          </div>
+          {{/if}}
+          <div class="panel-footer">
+            <form class="form-group">
+              <div class="input-group">
+                <span class="input-group-addon"><span class="mdi-communication-messenger"></span></span>
+                <input value="{{ comment.comment }}" class="form-control" type="text" placeholder="Comment">
+                <span class="input-group-btn">
+                  <button class="btn btn-xs btn-primary" type="button" on-click="newComment()">Send</button>
+                </span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
 
   <!-- build:js scripts/vendor.js -->
   <!-- bower:js -->
