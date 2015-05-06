@@ -47,17 +47,35 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 });
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+  if (request.command === "getUser") {
+    chrome.storage.sync.get('disqus.user', function(item) {
+      var user;
+      if (item['disqus.user']) {
+        user = JSON.parse(item['disqus.user']);
+        return sendResponse({
+          user: user
+        });
+      }
+    });
+  }
+  if (request.command === "setUser") {
+    chrome.storage.sync.set({
+      'disqus.user': JSON.stringify(request.user)
+    });
+  }
   if (request.command === "newComment" || request.command === "getComments") {
     return chrome.tabs.query({
       currentWindow: true,
       active: true
     }, function(tabs) {
-      var comment, tab, url, user;
+      var comment, offset, tab, url, user;
       tab = tabs[0];
       if (tab.url) {
         url = new URL(tab.url).hostname;
         if (request.command === "getComments") {
-          Backend.getComments(url, function(response) {
+          offset = request.offset || 0;
+          console.log(offset);
+          Backend.getComments(url, offset, function(response) {
             return sendResponse({
               status: "success",
               response: response
@@ -72,7 +90,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         if (request.command === "newComment") {
           user = request.user;
           comment = request.comment;
-          return Backend.newComment(url, user.title, user.email, comment.comment, comment.replyTo, function(response) {
+          return Backend.newComment(url, user.title, user.email, comment.text, comment.replyTo, function(response) {
             sendResponse({
               status: "success",
               response: response

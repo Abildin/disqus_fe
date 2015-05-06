@@ -8,9 +8,14 @@ body {
 }
 
 .panel-body {
-    max-height: 300px;
+    max-height: 260px;
+    overflow-y: hidden;
 }
 
-.panel-primary{
+.panel-primary {
     max-height: 600px;
+}
+
+.pager {
+	margin: 0;
 }

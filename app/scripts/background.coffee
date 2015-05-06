@@ -32,6 +32,15 @@ chrome.alarms.onAlarm.addListener (alarm) ->
         updateBadge url
 
 chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
+  if request.command == "getUser"
+    chrome.storage.sync.get 'disqus.user', (item) ->
+      if item['disqus.user']
+        user = JSON.parse(item['disqus.user'])
+        sendResponse
+          user: user
+  if request.command == "setUser"
+    chrome.storage.sync.set 
+      'disqus.user': JSON.stringify(request.user)
   if request.command == "newComment" || request.command == "getComments"
     chrome.tabs.query
       currentWindow: true
@@ -41,7 +50,9 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
       if tab.url
         url = new URL(tab.url).hostname
         if request.command == "getComments"
-          Backend.getComments url, (response) ->
+          offset = request.offset || 0
+          console.log offset
+          Backend.getComments url, offset, (response) ->
             sendResponse
               status: "success"
               response: response
@@ -52,7 +63,7 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
         if request.command == "newComment"
           user = request.user
           comment = request.comment
-          Backend.newComment url, user.title, user.email, comment.comment, comment.replyTo, (response) ->
+          Backend.newComment url, user.title, user.email, comment.text, comment.replyTo, (response) ->
             sendResponse
               status: "success"
               response: response

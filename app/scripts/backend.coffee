@@ -5,27 +5,30 @@ module = exports ? this
 HOST_NAME = "http://localhost:8000"
 
 $this =
-  getComments: (url, callback, errback) ->
+  # Helper method to get comments
+  getComments: (url, offset, callback, errback) ->
     $.ajax
       method: "GET"
-      url: HOST_NAME + "/api/v1/comment/?url__iexact=#{url}"
+      url: HOST_NAME + "/api/v1/comment/?url__iexact=#{url}&limit=3&offset=#{offset*3}"
       contentType: "application/json"
       dataType: "json"
       success: (result)->
         callback result
       error: (result)->
         errback result
+  # Helper method to get comments number
   getCount: (url, callback, errback) ->
     $.ajax
       method: "GET"
-      url: HOST_NAME + "/api/v1/comment/?url__iexact=#{url}&limit=0&total_count=true"
+      url: HOST_NAME + "/api/v1/comment/?url__iexact=#{url}&total_count=true"
       contentType: "application/json"
       dataType: "json"
       success: (result)->
         callback result
       error: (result)->
         errback result
-  newComment: (url, title, email, comment, replyTo, callback, errback) ->
+  # Helper method to post new comments
+  newComment: (url, title, email, text, replyTo, callback, errback) ->
     $.ajax
       method: "POST"
       url: HOST_NAME + "/api/v1/comment/"
@@ -35,7 +38,7 @@ $this =
         url: url
         title: title
         email: email
-        comment: comment
+        text: text
         replyTo: replyTo
       success: (result)->
         callback result

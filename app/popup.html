@@ -32,8 +32,8 @@
             <h3 class="panel-title">Who are you?</h3>
           </div>
           <div class="panel-body">
-            <input type="text" value="{{ user.title }}" on-change="query(event)" class="form-control" placeholder="Name">
-            <input type="text" value="{{ user.email }}" on-change="query(event)" class="form-control" placeholder="Email">
+            <input type="text" value="{{ user.title }}" on-change="save()" class="form-control" placeholder="Name">
+            <input type="text" value="{{ user.email }}" on-change="save()" class="form-control" placeholder="Email">
           </div>
         </div>
       </div>
@@ -49,43 +49,67 @@
           {{/if}}
           {{#if comments.length != 0}}
           <div class="panel-heading shadow-z-1">
-              <h3 class="panel-title">{{ comments.length }} comment{{#if comments.length > 1}}s{{/if}}</h3>
+              <h3 class="panel-title">{{ meta.total_count }} comment{{#if meta.total_count > 1}}s{{/if}}</h3>
           </div>
-          <div class="panel-body" style="overflow-y: scroll;">
+          <div class="panel-body">
             <div class="list-group">
-                {{#each comments}}
-                <div class="list-group-item" on-click="replyTo(this)">
-                    <div class="row-picture">
-                        <img class="circle" src="http://www.gravatar.com/avatar/{{ email || '' }}" alt="icon">
-                    </div>
-                    <div class="row-content">
-                        <div class="least-content">{{ format(timestamp) }}</div>
-                        <h4 class="list-group-item-heading">{{ title }}</h4>
-                        <p class="list-group-item-text">{{ comment }}</p>
-                    </div>
-                </div>
-                <div class="list-group-separator"></div>
-                {{/each}}
+              {{#each comments}}
+              <div class="list-group-item" on-click="replyTo(this)">
+                  <div class="row-picture">
+                      <img class="circle" src="http://www.gravatar.com/avatar/{{ md5(email) || '' }}" alt="icon">
+                  </div>
+                  <div class="row-content">
+                      <div class="least-content" title="{{ formatFull(timestamp) }}">{{ format(timestamp) }}</div>
+                      <h4 class="list-group-item-heading">{{ title }}
+                        {{#if this.replyTo }}
+                        <small title="{{ this.replyTo.text }}"> replied to {{ this.replyTo.title }}</small>
+                        {{/if}}
+                      </h4>
+                      <p class="list-group-item-text">{{ text }}</p>
+                  </div>
+              </div>
+              <div class="list-group-separator"></div>
+              {{/each}}
             </div>
           </div>
           {{/if}}
+          {{#if meta.total_count > meta.limit }}
           <div class="panel-footer">
-            <form class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><span class="mdi-communication-messenger"></span></span>
-                <input value="{{ comment.comment }}" class="form-control" type="text" placeholder="Comment">
-                <span class="input-group-btn">
-                  <button class="btn btn-xs btn-primary" type="button" on-click="newComment()">Send</button>
+            <ul class="pager">
+              <li class="previous {{#if !meta.previous }}disabled{{/if}}"><a on-click="prev()">← Older</a></li>
+              <li>
+                <span>
+                  {{ Math.floor(meta.offset / meta.limit) + 1 }} out of {{ Math.floor(meta.total_count / meta.limit) + (meta.total_count % meta.limit ? 1 : 0) }}
                 </span>
-              </div>
-            </form>
+              </li>
+              <li class="next {{#if !meta.next }}disabled{{/if}}"><a on-click="next()">Newer →</a></li>
+            </ul>
+          </div>
+          {{/if}}
+          <div class="panel-footer">
+            <div class="input-group">
+              <span class="input-group-addon"><span class="mdi-communication-messenger"></span></span>
+              <input value="{{ comment.text }}" class="form-control" type="text" placeholder="Comment">
+              <span class="input-group-btn">
+                <button class="btn btn-xs btn-primary" type="button" on-click="newComment()">Send</button>
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    {{#if error }}
+      <div class="row">
+        <div class="alert alert-dismissable alert-danger">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <strong>{{ error }}</strong>
+        </div>
+      </div>
+    {{/if}}
   </script>
 
-
+  <script src="scripts/md5.min.js"></script>
   <!-- build:js scripts/vendor.js -->
   <!-- bower:js -->
   <script src="bower_components/jquery/dist/jquery.js"></script>
