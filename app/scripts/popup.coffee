@@ -122,8 +122,17 @@ CommentRactive = Ractive.extend
   # Add "replyTo" to current comment and add prefix with username of replied comment's owner to comment text
   # 
   replyTo: (comment) ->
+    repliedMessage = this.get 'comment.replyTo'
+    newText = this.get 'comment.text'
+    if !newText
+      newText = ""
+    if repliedMessage
+      if newText.substring(0, repliedMessage.title.length + 2) == "#{repliedMessage.title}, "
+        newText = newText.substring(repliedMessage.title.length + 2, newText.length)
+    newText = "#{comment.title}, #{newText}"
+    console.log newText
     this.set 'comment.replyTo', comment
-    this.set 'comment.text', "#{comment.title}, #{this.get 'comment.text'}"
+    this.set 'comment.text', newText
   # 
   # Method for canceling reply to comments
   # 

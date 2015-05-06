@@ -98,8 +98,21 @@ CommentRactive = Ractive.extend({
     });
   },
   replyTo: function(comment) {
+    var newText, repliedMessage;
+    repliedMessage = this.get('comment.replyTo');
+    newText = this.get('comment.text');
+    if (!newText) {
+      newText = "";
+    }
+    if (repliedMessage) {
+      if (newText.substring(0, repliedMessage.title.length + 2) === (repliedMessage.title + ", ")) {
+        newText = newText.substring(repliedMessage.title.length + 2, newText.length);
+      }
+    }
+    newText = comment.title + ", " + newText;
+    console.log(newText);
     this.set('comment.replyTo', comment);
-    return this.set('comment.text', comment.title + ", " + (this.get('comment.text')));
+    return this.set('comment.text', newText);
   },
   cancel: function() {
     var newText, repliedMessage;
